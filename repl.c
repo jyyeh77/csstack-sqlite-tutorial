@@ -13,6 +13,12 @@ struct InputBuffer_t {
 };
 typedef struct InputBuffer_t InputBuffer;
 
+enum MetaCommandResult_t {
+  META_COMMAND_SUCCESS,
+  META_COMMAND_UNRECOGNIZED_COMMAND
+};
+typedef enum MetaCommandResult_t 
+
 InputBuffer* new_input_buffer() {
   // allocate memory for new input buffer
   InputBuffer* input_buffer = malloc(sizeof(InputBuffer));
@@ -51,10 +57,20 @@ int main(int argc, char* argv[]) {
 
     // get buffer pointer from struct that input_buffer points to
     // if input buffer is '.exit', exit success
-    if (strcmp(input_buffer->buffer, ".exit") == 0) {
-      exit(EXIT_SUCCESS);
-    } else {
-      printf("Unrecognized command '%s'.\n", input_buffer->buffer);
+    /*if (strcmp(input_buffer->buffer, ".exit") == 0) {*/
+      /*exit(EXIT_SUCCESS);*/
+    /*} else {*/
+      /*printf("Unrecognized command '%s'.\n", input_buffer->buffer);*/
+    /*}*/
+
+    if (input_buffer->buffer[0] == '.') {
+      switch (do_meta_command(input_buffer)) {
+        case (META_COMMAND_SUCCESS):
+          continue;
+        case (META_COMMAND_UNRECOGNIZED_COMMAND):
+          printf("Unrecognized command '%s'\n", input_buffer->buffer[0])
+          continue;
+      }
     }
   }
 }
