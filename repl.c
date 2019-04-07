@@ -33,10 +33,29 @@ enum StatementType_t {
 };
 typedef enum StatementType_t StatementType;
 
+const uint32_t COLUMN_USERNAME_SIZE = 32;
+const uint32_t COLUMN_EMAIL_SIZE = 255;
+struct Row_t {
+    uint32_t id;
+    char username[COLUMN_USERNAME_SIZE];
+    char email[COLUMN_EMAIL_SIZE];
+};
+typedef struct Row_t Row;
+
 struct Statement_t {
     StatementType type;
+    Row row_to_insert; // used by insert statement
 };
 typedef struct Statement_t Statement;
+
+// define representation of row
+// macro to get size of Row attribute -
+// TODO: figure out if casting 0 to Struct* is good practice?, why macro?
+#define size_of_attribute(Struct, Attribute) sizeof(((Struct*)0)->Attribute)
+
+const uint32_t ID_SIZE = size_of_attribute(Row, id);
+const uint32_t USERNAME_SIZE = size_of_attribute(Row, username);
+const uint32_t EMAIL_SIZE = size_of_attribute(Row, email);
 
 InputBuffer* new_input_buffer() {
     // malloc returns pointer to allocate memory for input buffer
@@ -62,6 +81,13 @@ PrepareResult prepare_statement(
     // if first 6 chars of input buffer are 'insert'
     if (strncmp(input_buffer->buffer, "insert", 6) == 0) {
         statement->type = STATEMENT_INSERT;
+        // parse arguments in insert
+        int args_assigned = sscanf(
+                input_buffer->buffer, "insert %d %s %s", &(statement->row_to_insert.id),
+                statement->row_to_insert.username, statement->row_to_insert.email);
+        if (args_assigned < 3) {
+            return PREPARE_SYNTAX_ERROR;
+        }
         return PREPARE_SUCCESS;
     }
     // input exactly equal to "select"
